@@ -20,6 +20,9 @@ The agent reads and writes the scientific interpretation; scripts do not summari
    including methods, limitations and relevant supplements. Inspect original
    figures/tables visually; extraction text/captions alone cannot establish their
    meaning. Record coverage and an independent PDF-checked object/panel inventory.
+   If extraction disagrees with a legible source, use [source adjudication](references/source-adjudication.md).
+   Keep raw files unchanged; record verified observations separately. Unresolved
+   source evidence still blocks dependent conclusions, not unrelated conclusions.
 4. Read [evidence-rules](references/evidence-rules.md) and
    [figure-table-rules](references/figure-table-rules.md). Complete
    `review/manifest.yaml` and `review/paper-review.md`; keep author claims,

@@ -1,5 +1,6 @@
 """Deterministic artifact checks; no scientific quality scoring or model calls."""
 import argparse
+import hashlib
 import json
 import re
 from datetime import date, datetime
@@ -29,7 +30,11 @@ INNOVATION_FIELDS = (
     "Author claim", "Prior approach / comparison target", "What actually changed",
     "Supporting evidence", "Reviewer assessment", "Transferability",
 )
-OBJECT_REF = re.compile(r"\b(Figure|Fig\.?|Table)\s+(S?[1-9][0-9]*)([a-z])?\b", re.I)
+OBJECT_KIND = r"(?:Extended Data (?:Figure|Fig\.?|Table)|Reporting Table|Figure|Fig\.?|Table)"
+OBJECT_REF = re.compile(r"\b(" + OBJECT_KIND + r")\s+(S?[1-9][0-9]*)([a-z])?\b", re.I)
+CHINESE_REF = re.compile(r"原文(扩展图|扩展表|报告表|图|表)\s*(S?[1-9][0-9]*)([a-z])?")
+CHINESE_KINDS = {"扩展图": "Extended Data Figure", "扩展表": "Extended Data Table",
+                 "报告表": "Reporting Table", "图": "Figure", "表": "Table"}
 HAN = re.compile(r"[\u3400-\u9fff]")
 
 
@@ -68,9 +73,16 @@ def prose(text):
 def object_refs(text):
     result = []
     for kind, number, panel in OBJECT_REF.findall(text):
-        kind = "Table" if kind.lower() == "table" else "Figure"
+        kind = re.sub(r"fig\.?$", "Figure", kind, flags=re.I).title()
         result.append((f"{kind} {number.upper()}", panel.lower()))
+    for kind, number, panel in CHINESE_REF.findall(text):
+        result.append((f"{CHINESE_KINDS[kind]} {number.upper()}", panel.lower()))
     return result
+
+
+def chinese_label(identifier):
+    kind, number = identifier.rsplit(" ", 1)
+    return "原文" + next(k for k, v in CHINESE_KINDS.items() if v == kind) + number
 
 
 def safe_file(root, value, base=None):
@@ -139,8 +151,6 @@ def validate(workspace, stage="blog"):
             errors.append(f"review.{key} must be true after source inspection")
     if review["status"] != "reviewed" or not review["coverage"]:
         errors.append("review must be reviewed with explicit full-text coverage")
-    if any(item["blocks_blog"] for item in review["uncertainties"]):
-        errors.append("unresolved extraction uncertainty blocks blog generation")
     source = ""
     for key, value in data["source"].items():
         try:
@@ -156,15 +166,36 @@ def validate(workspace, stage="blog"):
     objects = data["figures"] + data["tables"]
     registered = {item["id"]: item for item in objects}
     claims = {item["id"]: item for item in data["claims"]}
+    adjudications = {item["id"]: item for item in data.get("adjudications", [])}
+    if len(adjudications) != len(data.get("adjudications", [])):
+        errors.append("duplicate adjudication IDs")
+    for identifier, item in adjudications.items():
+        if item["status"] != "verified":
+            errors.append(f"{identifier}: unresolved PDF adjudication blocks blog generation")
+        if item["source_object"] != "Document" and item["source_object"] not in registered:
+            errors.append(f"{identifier}: unknown source object {item['source_object']}")
+        for path, digest in ((item["raw_file"], item["raw_sha256"]),
+                             (data["source"]["pdf"], item["pdf_sha256"])):
+            try:
+                if hashlib.sha256(safe_file(root, path).read_bytes()).hexdigest() != digest:
+                    errors.append(f"{identifier}: source hash mismatch: {path}")
+            except (OSError, ValueError) as exc:
+                errors.append(f"{identifier}: {exc}")
+    for item in review["uncertainties"]:
+        resolved = adjudications.get(item.get("resolved_by"))
+        if "resolved_by" in item and (not resolved or resolved["status"] != "verified"):
+            errors.append(f"unknown/unresolved uncertainty adjudication {item['resolved_by']}")
+        if item["blocks_blog"] and (not resolved or resolved["status"] != "verified"):
+            errors.append("unresolved extraction uncertainty blocks blog generation")
     for label, sequence in (("inventory", data["inventory"]), ("objects", objects), ("claims", data["claims"])):
         ids = [item["id"] for item in sequence]
         if len(ids) != len(set(ids)):
             errors.append(f"duplicate {label} IDs")
-    for key, prefix in (("figures", "Figure "), ("tables", "Table ")):
-        if any(not item["id"].startswith(prefix) for item in data[key]):
+    for key, kind in (("figures", "Figure"), ("tables", "Table")):
+        if any(kind not in item["id"].split() for item in data[key]):
             errors.append(f"wrong object type in {key}")
     # Caption candidates are only a deterministic backstop to the PDF attestation.
-    captions = re.findall(r"^\s*(?:#{1,6}\s+)?(?:\*\*)?((?:Figure|Fig\.?|Table)\s+S?[1-9][0-9]*)\b", prose(source), re.M | re.I)
+    captions = re.findall(r"^\s*(?:#{1,6}\s+)?(?:\*\*)?(" + OBJECT_KIND + r"\s+S?[1-9][0-9]*)\b", prose(source), re.M | re.I)
     for caption in captions:
         identifier = object_refs(caption)[0][0]
         if identifier not in inventory:
@@ -197,8 +228,22 @@ def validate(workspace, stage="blog"):
         if len(inv["panels"]) != len(set(inv["panels"])):
             errors.append(f"{identifier}: duplicate inventory panel")
     for identifier, item in claims.items():
-        if normalized(item["evidence_text"]) not in normalized(source):
-            errors.append(f"{identifier}: evidence excerpt not found in extracted source")
+        evidence_source = source
+        if "evidence_adjudication" in item:
+            adjudication = adjudications.get(item["evidence_adjudication"])
+            if not adjudication or adjudication["status"] != "verified":
+                errors.append(f"{identifier}: unknown/unresolved adjudication {item['evidence_adjudication']}")
+                evidence_source = ""
+            else:
+                evidence_source = adjudication["pdf_observation"]
+                if item["source_page"] != adjudication["source_page"]:
+                    errors.append(f"{identifier}: adjudication source page mismatch")
+                if adjudication["source_object"] != "Document" and adjudication["source_object"] not in {
+                    parent for ref in item["figure"] for parent, _ in object_refs(ref)
+                }:
+                    errors.append(f"{identifier}: adjudication source object mismatch")
+        if normalized(item["evidence_text"]) not in normalized(evidence_source):
+            errors.append(f"{identifier}: evidence excerpt not found in selected source")
         for ref in item["figure"]:
             target, panel = object_refs(ref)[0]
             if target not in registered or (panel and panel not in inventory.get(target, {}).get("panels", [])):
@@ -289,12 +334,13 @@ def validate(workspace, stage="blog"):
         for identifier, item in registered.items():
             if item["blog_role"] != "used":
                 continue
-            found = [content for title, content in blocks if title.startswith(identifier + "：") or title.startswith(identifier + ":")]
+            labels = (identifier, chinese_label(identifier))
+            found = [content for title, content in blocks if any(title.startswith(label + separator) for label in labels for separator in ("：", ":"))]
             if len(found) != 1:
                 errors.append(f"blog: requires one evidence section for {identifier}")
                 continue
             content = found[0]
-            reader_label = "读图方法" if identifier.startswith("Figure") else "读表方法"
+            reader_label = "读图方法" if "Figure" in identifier.split() else "读表方法"
             for label in ("问题", reader_label, "核心观察", "支持判断", "证据边界"):
                 m = re.search(re.escape(label) + r"：([^\n]+)", content)
                 if not m or not HAN.search(m[1]):
@@ -303,9 +349,11 @@ def validate(workspace, stage="blog"):
                 support = re.search(r"支持判断：([^\n]+)", content)
                 if not support or claim_id not in re.findall(r"\bC[0-9]+\b", support[1]):
                     errors.append(f"blog {identifier}: support paragraph missing {claim_id}")
-            if identifier.startswith("Figure"):
+            if item.get("publication", {}).get("mode") == "discussion_only":
+                continue
+            if "Figure" in identifier.split():
                 captions = re.findall(r"<figcaption>(.*?)</figcaption>", content, re.S)
-                if not captions or not any(identifier in c and HAN.search(c) for c in captions):
+                if not captions or not any(any(label in c for label in labels) and HAN.search(c) for c in captions):
                     errors.append(f"blog {identifier}: missing Chinese figure caption")
                 images = re.findall(r"<img\b[^>]*>", content, re.S)
                 if not images or any(not re.search(r'\salt\s*=\s*["\'][^"\']*[\u3400-\u9fff][^"\']*["\']', image) for image in images):
@@ -314,7 +362,7 @@ def validate(workspace, stage="blog"):
                     errors.append(f"blog {identifier}: checked static image src required")
             else:
                 before = content.split("<ResponsiveTable", 1)[0]
-                if "<ResponsiveTable" not in content or not re.search(r"<p>\s*" + re.escape(identifier) + r"[：:].*?[\u3400-\u9fff].*?</p>", before, re.S):
+                if "<ResponsiveTable" not in content or not re.search(r"<p>\s*" + "(?:" + "|".join(map(re.escape, labels)) + r")[：:].*?[\u3400-\u9fff].*?</p>", before, re.S):
                     errors.append(f"blog {identifier}: table caption above ResponsiveTable required")
                 if not re.search(r"^\s*\|.*\|\s*$|<table\b", content, re.M):
                     errors.append(f"blog {identifier}: missing table content")

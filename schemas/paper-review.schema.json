@@ -119,6 +119,10 @@
               },
               "blocks_blog": {
                 "type": "boolean"
+              },
+              "resolved_by": {
+                "type": "string",
+                "pattern": "^A[0-9]+$"
               }
             },
             "required": [
@@ -148,7 +152,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^(Figure|Table) S?[1-9][0-9]*$"
+            "pattern": "^(Figure|Table|Extended Data Figure|Extended Data Table|Reporting Table) S?[1-9][0-9]*$"
           },
           "scope": {
             "enum": [
@@ -185,7 +189,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^(Figure|Table) S?[1-9][0-9]*$"
+            "pattern": "^(Figure|Table|Extended Data Figure|Extended Data Table|Reporting Table) S?[1-9][0-9]*$"
           },
           "scope": {
             "enum": [
@@ -284,6 +288,27 @@
               ],
               "additionalProperties": false
             }
+          },
+          "publication": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "enum": [
+                  "reproduced",
+                  "discussion_only"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "mode",
+              "reason"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -305,7 +330,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^(Figure|Table) S?[1-9][0-9]*$"
+            "pattern": "^(Figure|Table|Extended Data Figure|Extended Data Table|Reporting Table) S?[1-9][0-9]*$"
           },
           "scope": {
             "enum": [
@@ -404,6 +429,27 @@
               ],
               "additionalProperties": false
             }
+          },
+          "publication": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "enum": [
+                  "reproduced",
+                  "discussion_only"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "mode",
+              "reason"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -445,7 +491,7 @@
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "^(Figure|Table) S?[1-9][0-9]*[a-z]?$"
+              "pattern": "^(Figure|Table|Extended Data Figure|Extended Data Table|Reporting Table) S?[1-9][0-9]*[a-z]?$"
             }
           },
           "evidence_text": {
@@ -462,6 +508,10 @@
             "type": "string",
             "minLength": 1,
             "pattern": "\\S"
+          },
+          "evidence_adjudication": {
+            "type": "string",
+            "pattern": "^A[0-9]+$"
           }
         },
         "required": [
@@ -473,6 +523,92 @@
           "evidence_text",
           "interpretation",
           "critical_assessment"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "adjudications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "raw_file": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "raw_locator": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "raw_observation": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "pdf_observation": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "interpretation": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "limitation": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "verified_by": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "source_object": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^A[0-9]+$"
+          },
+          "status": {
+            "enum": [
+              "verified",
+              "unresolved"
+            ]
+          },
+          "source_page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "raw_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "pdf_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "raw_file",
+          "raw_locator",
+          "raw_observation",
+          "pdf_observation",
+          "interpretation",
+          "limitation",
+          "verified_by",
+          "source_object",
+          "id",
+          "status",
+          "source_page",
+          "raw_sha256",
+          "pdf_sha256"
         ],
         "additionalProperties": false
       }

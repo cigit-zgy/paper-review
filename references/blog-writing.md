@@ -20,8 +20,10 @@ studies it.
 
 For EVERY Figure/Table used in the blog, the blog MUST:
 
-1. explicitly reference its canonical ID (Figure 1, Table 1, etc.);
-2. supply a Chinese explanatory caption (figcaption, or a table caption ABOVE table);
+1. explicitly reference its canonical ID or Chinese equivalent (原文图1, 原文表1,
+   原文扩展图1, 原文扩展表1, 原文报告表1);
+2. when reproducing an object, supply a Chinese explanatory caption (figcaption,
+   or a table caption ABOVE table);
 3. explain the question the object answers;
 4. tell readers how to read axes, groups, panels or columns;
 5. identify the core observation;
@@ -35,6 +37,17 @@ the writing contract checkable while retaining paragraph prose, use the labels
 Each label introduces real analysis; generic filler does not meet the scientific
 contract even when a structural checker passes. Cite every object's supported
 claim IDs in its 支持判断 paragraph. Discuss panels individually and together.
+
+Prefer Chinese headings such as `## 原文图1：<科学问题>` in Chinese articles.
+Necessary method names and standard abbreviations can remain English; ordinary
+headings, captions, table headers and editorial labels should be Chinese.
+When reproduction is restricted or deliberately avoided, set the object's
+`publication: {mode: discussion_only, reason: <specific reason>}`. The full
+evidence discussion remains required; original images/table reproductions are
+not required. This field is not a license grant. Disclose non-reproduction and
+link the original paper. Any original conceptual diagram or factual synthesis
+table must be labelled as the reviewer's synthesis and cannot mimic the original.
+Absent this explicit mode, the existing image/table and caption checks apply.
 
 Use semantic `<figure><img .../><figcaption>...</figcaption></figure>`, meaningful
 Chinese alt text and a workspace-relative source asset. Use `<ResponsiveTable>`

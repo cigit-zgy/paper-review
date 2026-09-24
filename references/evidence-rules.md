@@ -17,8 +17,9 @@ For each claim record `id`, `author_claim`, `source_section`, `source_page`,
 include a panel reference such as Figure 3b, whose parent and panel must exist.
 Use concise source excerpts; preserve original language, quantities and units.
 When an excerpt cannot be matched to Markdown because OCR/formatting is damaged,
-repair it using the original PDF and mark the extraction issue rather than inventing
-a quote. The deterministic checker normalizes whitespace, not scientific meaning.
+record a separate source-PDF adjudication rather than editing the raw extraction
+or inventing a quote. Follow [source-adjudication](source-adjudication.md).
+The deterministic checker normalizes whitespace, not scientific meaning.
 
 Four layers must remain explicit:
 

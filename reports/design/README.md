@@ -56,6 +56,20 @@ Synthetic fixtures are explicitly labelled and contain no real research findings
 User authorization and source-image reuse rights are required before publishing
 any article generated with this Skill.
 
+## Source adjudication
+
+Original-PDF observations may resolve extraction defects only through explicit,
+SHA-256-bound records. Preserve raw files; record source page/object, raw locator
+and observation, visual observation, interpretation, limitation and reviewer.
+Only linked verified records resolve a blocking uncertainty. Adjudicated claim
+excerpts must belong to the matching observation, page and object.
+See references/source-adjudication.md.
+
+Extended Data figures/tables and internally numbered reporting tables have distinct
+IDs. Chinese discussion-only evidence sections preserve all scientific analysis
+without reproducing source images. Missing supplements limit dependent claims.
+Independent scientific review and publication authorization remain separate gates.
+
 ## Validation boundary
 
 Offline tests cover success and rejection cases, paths with spaces, missing

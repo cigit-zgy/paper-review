@@ -1,5 +1,6 @@
 """Offline contract tests. No network, real papers, MinerU models or pytest."""
 import shutil
+import hashlib
 import subprocess
 import sys
 import tempfile
@@ -36,6 +37,89 @@ class ContractTests(unittest.TestCase):
         self.assertTrue(errors, "incomplete artifact unexpectedly passed")
         if needle:
             self.assertIn(needle, "\n".join(errors))
+
+    def add_adjudication(self):
+        record = {
+            "id": "A01", "status": "verified", "source_page": 2,
+            "source_object": "Figure 1", "raw_file": "extracted/paper.md",
+            "raw_sha256": hashlib.sha256((self.work / "extracted/paper.md").read_bytes()).hexdigest(),
+            "pdf_sha256": hashlib.sha256((self.work / "source/paper.pdf").read_bytes()).hexdigest(),
+            "raw_locator": "synthetic caption at line 3",
+            "raw_observation": "Synthetic caption order reversed.",
+            "pdf_observation": "Synthetic source panel a precedes panel b.",
+            "interpretation": "Read a then b; no raw files modified.",
+            "limitation": "Synthetic provenance mechanics only, not actual PDF inspection.",
+            "verified_by": "synthetic test reviewer",
+        }
+        self.edit(lambda m: m.update(adjudications=[record]))
+
+    def test_verified_source_adjudication_resolves_only_linked_uncertainty(self):
+        self.add_adjudication()
+        self.edit(lambda m: m["review"]["uncertainties"].append({
+            "source_location": "p2", "issue": "Caption order", "blocks_blog": True,
+            "resolved_by": "A01"}))
+        before = (self.work / "extracted/paper.md").read_bytes()
+        self.assertEqual(validate(self.work, "review"), [])
+        self.assertEqual((self.work / "extracted/paper.md").read_bytes(), before)
+        self.edit(lambda m: m["review"]["uncertainties"].append({
+            "source_location": "p3", "issue": "Unreadable values", "blocks_blog": True}))
+        self.rejects("uncertainty", "review")
+
+    def test_adjudication_claim_uses_pdf_observation_not_unverified_prose(self):
+        self.add_adjudication()
+        self.edit(lambda m: m["claims"][0].update(
+            evidence_adjudication="A01", source_page=2,
+            evidence_text="Synthetic source panel a precedes panel b."))
+        self.assertEqual(validate(self.work, "review"), [])
+        self.edit(lambda m: m["claims"][0].update(evidence_text="An invented result."))
+        self.rejects("excerpt", "review")
+
+    def test_adjudication_rejects_changed_source_and_raw_hashes(self):
+        self.add_adjudication()
+        (self.work / "extracted/paper.md").write_text("Changed extraction")
+        self.rejects("hash", "review")
+        self.edit(lambda m: m["adjudications"][0].update(
+            raw_sha256=hashlib.sha256((self.work / "extracted/paper.md").read_bytes()).hexdigest()))
+        (self.work / "source/paper.pdf").write_bytes(b"different source")
+        self.rejects("hash", "review")
+
+    def test_adjudication_rejects_unresolved_unknown_and_mismatched_page(self):
+        self.add_adjudication()
+        self.edit(lambda m: m["claims"][0].update(evidence_adjudication="A01", source_page=3))
+        self.rejects("page", "review")
+        self.edit(lambda m: m["adjudications"][0].update(status="unresolved"))
+        self.rejects("unresolved", "review")
+        self.edit(lambda m: m["claims"][0].update(evidence_adjudication="A99"))
+        self.rejects("A99", "review")
+
+    def test_adjudication_rejects_empty_observation_and_unknown_object(self):
+        self.add_adjudication()
+        self.edit(lambda m: m["adjudications"][0].update(pdf_observation=""))
+        self.rejects("pdf_observation", "review")
+        self.edit(lambda m: m["adjudications"][0].update(pdf_observation="Checked", source_object="Figure 99"))
+        self.rejects("Figure 99", "review")
+
+    def test_text_only_chinese_evidence_sections_without_reproduction(self):
+        self.edit(lambda m: [obj.update(publication={"mode": "discussion_only", "reason": "No reproduction permission assumed."})
+                             for obj in m["figures"] + m["tables"]])
+        p = self.work / "output/blog.mdx"
+        s = p.read_text().replace("Figure 1", "原文图1").replace("Table 1", "原文表1")
+        import re
+        s = re.sub(r"<figure>.*?</figure>", "", s, flags=re.S)
+        s = re.sub(r"<ResponsiveTable.*?</ResponsiveTable>", "", s, flags=re.S)
+        p.write_text(s)
+        self.assertEqual(validate(self.work, "blog"), [])
+        self.edit(lambda m: m["figures"][0]["publication"].update(reason=""))
+        self.rejects("reason")
+
+    def test_extended_data_ids_do_not_collide_with_main_figures(self):
+        self.edit(lambda m: (m["inventory"][0].update(id="Extended Data Figure 1"),
+                             m["figures"][0].update(id="Extended Data Figure 1"),
+                             m["claims"][0].update(figure=["Extended Data Figure 1a", "Table 1"])))
+        for rel in ["extracted/paper.md", "review/paper-review.md", "output/blog.mdx"]:
+            p = self.work / rel
+            p.write_text(p.read_text().replace("Figure 1", "Extended Data Figure 1"))
+        self.assertEqual(validate(self.work, "blog"), [])
 
     def test_valid_minimal_review_and_blog(self):
         self.assertEqual(validate(self.work, "review"), [])
