@@ -17,11 +17,6 @@ SECTIONS = (
     "Main findings", "Claimed innovations", "Figures and tables", "Limitations",
     "Reproducibility", "Transferability", "Critical assessment",
 )
-BLOG_SECTIONS = (
-    "这篇论文解决什么问题？", "研究思路是什么？", "作者真正证明了什么？",
-    "创新点在哪里？", "哪些结论证据仍然不足？", "这项工作有哪些局限？",
-    "对我的研究有什么可迁移价值？", "参考文献",
-)
 ANALYSIS_FIELDS = (
     "role", "question", "what_is_shown", "variables_axes_groups", "comparison",
     "main_observation", "authors_interpretation", "evidence_strength", "limitations",
@@ -67,7 +62,9 @@ def normalized(text):
 
 def prose(text):
     text = re.sub(r"```.*?```|~~~.*?~~~", "", text, flags=re.S)
-    return re.sub(r"<!--.*?-->|\{/\*.*?\*/\}", "", text, flags=re.S)
+    text = re.sub(r"<!--.*?-->|\{/\*.*?\*/\}", "", text, flags=re.S)
+    text = re.sub(r"<(pre|code)\b[^>]*>.*?</\1>", "", text, flags=re.S | re.I)
+    return re.sub(r"(`+)(?!`)(.*?)\1(?!`)", "", text, flags=re.S)
 
 
 def object_refs(text):
@@ -317,13 +314,42 @@ def validate(workspace, stage="blog"):
         if meta.get("modDatetime") is not None and not isinstance(meta["modDatetime"], (date, datetime)):
             errors.append("blog: modDatetime must be a YAML timestamp or null")
         body = prose(text[match.end():])
-        blocks = heading_blocks(body, 2)
-        for section in BLOG_SECTIONS:
-            found = [content for title, content in blocks if title == section]
-            if len(found) != 1 or not found[0].strip():
-                errors.append(f"blog: missing/duplicate/empty section {section}")
-        if re.search(r"^# ", body, re.M) or "TODO" in text:
-            errors.append("blog: h1 or unfinished TODO present")
+        # Narrative titles are authored freely; enforce hierarchy, not a fixed outline.
+        headings = [(m.start(), len(m[1]), m[2]) for m in re.finditer(r"^ *(#{1,6})\s+(.+)$", body, re.M)]
+        headings += [(m.start(), int(m[1]), re.sub(r"<[^>]+>", "", m[2]))
+                     for m in re.finditer(r"<h([1-6])\b[^>]*>(.*?)</h\1>", body, re.S | re.I)]
+        previous = 1
+        if not headings:
+            errors.append("blog: narrative headings required")
+        for _, depth, title in sorted(headings):
+            if depth < 2 or depth > 4 or depth > previous + 1:
+                errors.append("blog: heading hierarchy requires H2–H4 without skipped levels")
+            previous = depth
+            if re.match(r"(?:" + OBJECT_KIND + r"\s+S?\d|原文(?:扩展图|扩展表|报告表|图|表)\s*S?\d)", title, re.I):
+                errors.append("blog: object-number headings cannot define the narrative")
+        if re.search(r"^.+\n {0,3}=+[ \t]*$", body, re.M) or "TODO" in text:
+            errors.append("blog: h1 heading or unfinished TODO present")
+        for attrs in re.findall(r"<AcademicCallout\b([^>]*)>", body, re.S):
+            label = re.search(r'\blabel\s*=\s*["\']([^"\']+)["\']', attrs)
+            kind = re.search(r'\bkind\s*=\s*["\']([^"\']+)["\']', attrs)
+            if not label or not HAN.search(label[1]):
+                errors.append("blog: explicit static Chinese callout label required")
+            if kind and kind[1] not in {"note", "definition", "method", "caution"}:
+                errors.append("blog: unsupported callout kind")
+        evidence = {identifier: [] for identifier in registered}
+        for attrs, content in re.findall(r"<section\b([^>]*)>(.*?)</section>", body, re.S):
+            binding = re.search(r'data-evidence\s*=\s*["\']([^"\']+)["\']', attrs)
+            if not binding:
+                continue
+            claim_binding = re.search(r'data-claims\s*=\s*["\']([^"\']*)["\']', attrs)
+            linked = claim_binding[1].split() if claim_binding else []
+            if any(c not in claims for c in linked):
+                errors.append("blog: unknown claim binding")
+            for identifier in (v.strip() for v in binding[1].split(";")):
+                if identifier not in evidence:
+                    errors.append(f"blog: unknown evidence binding {identifier}")
+                else:
+                    evidence[identifier].append((content, linked))
         if not HAN.search(body):
             errors.append("blog: Chinese body required")
         for identifier, panel in object_refs(body):
@@ -332,23 +358,27 @@ def validate(workspace, stage="blog"):
             elif registered[identifier]["blog_role"] != "used":
                 errors.append(f"blog: {identifier} not marked used in manifest")
         for identifier, item in registered.items():
-            if item["blog_role"] != "used":
+            if item["scope"] == "main" and item["blog_role"] != "used":
+                errors.append(f"blog: main object must be explained and marked used: {identifier}")
+            if item["blog_role"] != "used" and item["scope"] != "main":
                 continue
             labels = (identifier, chinese_label(identifier))
-            found = [content for title, content in blocks if any(title.startswith(label + separator) for label in labels for separator in ("：", ":"))]
-            if len(found) != 1:
-                errors.append(f"blog: requires one evidence section for {identifier}")
+            found = evidence[identifier]
+            if not found:
+                errors.append(f"blog: missing narrative evidence binding for {identifier}")
                 continue
-            content = found[0]
-            reader_label = "读图方法" if "Figure" in identifier.split() else "读表方法"
-            for label in ("问题", reader_label, "核心观察", "支持判断", "证据边界"):
-                m = re.search(re.escape(label) + r"：([^\n]+)", content)
-                if not m or not HAN.search(m[1]):
-                    errors.append(f"blog {identifier}: missing Chinese {label}")
+            content = "\n".join(c for c, _ in found)
+            visible = re.sub(r"<[^>]+>", "", content)
+            if identifier not in {ref for ref, _ in object_refs(visible)}:
+                errors.append(f"blog {identifier}: missing visible reference in evidence discussion")
+            discussion = re.sub(r"<figure\b.*?</figure>", "", content, flags=re.S)
+            discussion = re.sub(r"<[^>]+>", "", discussion)
+            if not HAN.search(discussion):
+                errors.append(f"blog {identifier}: missing Chinese evidence discussion")
+            linked = {claim for _, ids in found for claim in ids}
             for claim_id in item.get("supported_claim", []):
-                support = re.search(r"支持判断：([^\n]+)", content)
-                if not support or claim_id not in re.findall(r"\bC[0-9]+\b", support[1]):
-                    errors.append(f"blog {identifier}: support paragraph missing {claim_id}")
+                if claim_id not in linked:
+                    errors.append(f"blog {identifier}: missing claim binding {claim_id}")
             if item.get("publication", {}).get("mode") == "discussion_only":
                 continue
             if "Figure" in identifier.split():

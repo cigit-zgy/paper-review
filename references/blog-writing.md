@@ -1,67 +1,83 @@
-# Chinese evidence-centred blog
+# Narrative-first, evidence-centered academic Chinese review
 
-MUST pass review-stage validation before blog generation. Read current target
-main rules and component interfaces, then record the checked commit in the manifest.
-The target's academic-content rules also reference Fenng/Tech-Doc-Style-Chinese;
-use that secondary reference when relevant without overriding source fidelity.
+Pass review-stage validation before writing. Read current target-main rules and
+PAPER_REVIEW.md; record the checked commit. Preserve the structured review and
+source adjudications. Scientific claims must not expand merely to improve a story.
 
-Body prose is Chinese. Preserve English paper title, journal, proper method/model
-names, variables, equations, code, DOI; introduce necessary technical terms as
-中文（English）. Ordinary research articles are about 2500–4500 Chinese characters,
-with extra space for genuinely complex methods/evidence. This is not a hard quota.
-Do not translate the paper paragraph by paragraph or reproduce mechanical IMRaD.
+## Argument before outline
 
-Start with a concise conclusion, then the required sections from templates/blog.mdx.
-The main narrative is Question → Figure/Table → How to read → Observation →
-Evidence-supported conclusion → Critical assessment. Organize objects by argument,
-not necessarily numerical order. Explain what transfers to the user's research
-conditionally; do not assume wastewater applicability merely because the user
-studies it.
+Begin with a bounded conclusion and develop a continuous argument:
+research tension → proposed solution → how it works → whether evidence supports
+it → reproduction versus open problems → what was established → limits → transfer.
+These are reasoning stages, not prescribed titles. H2 owns a complete narrative
+stage; H3 a scientific question, method step or evidence group; H4 only a panel,
+technical detail or local dispute. The layout owns H1. No body H1, H5+, skipped
+levels or Figure/Table-number headings. Do not substitute eight obligatory questions
+for the old figure checklist. Select titles after deciding the causal argument.
 
-For EVERY Figure/Table used in the blog, the blog MUST:
+A figure remains a first-class evidence object, not a table-of-contents entry.
+Place it where it advances the question; multiple objects may support one section,
+and one object may be revisited. Connect sections with the unresolved question
+that motivates the next step. Do not repeat the abstract or translate IMRaD.
 
-1. explicitly reference its canonical ID or Chinese equivalent (原文图1, 原文表1,
-   原文扩展图1, 原文扩展表1, 原文报告表1);
-2. when reproducing an object, supply a Chinese explanatory caption (figcaption,
-   or a table caption ABOVE table);
-3. explain the question the object answers;
-4. tell readers how to read axes, groups, panels or columns;
-5. identify the core observation;
-6. link it to existing claim IDs;
-7. explain the evidence boundary;
-8. go beyond translating the original caption.
+Explain every main-text figure/table. For every used object, make clear why it is
+needed, how to read it, the observation, supported claim, evidence boundary and
+reviewer's judgment. These may span connected paragraphs. Do not require visible
+问题/读图方法/核心观察/支持判断/证据边界 labels. Preserve panel/axis/unit/group,
+comparison, uncertainty and denominator semantics. Meaning and completeness are
+checked independently by a source-level reviewer, not by counting labels.
 
-Use `## Figure 1：<scientific question>` (or Table) for the object block. To make
-the writing contract checkable while retaining paragraph prose, use the labels
-`问题：`, `读图方法：` (or `读表方法：`), `核心观察：`, `支持判断：`, `证据边界：`.
-Each label introduces real analysis; generic filler does not meet the scientific
-contract even when a structural checker passes. Cite every object's supported
-claim IDs in its 支持判断 paragraph. Discuss panels individually and together.
+## Evidence binding without visible checklist prose
 
-Prefer Chinese headings such as `## 原文图1：<科学问题>` in Chinese articles.
-Necessary method names and standard abbreviations can remain English; ordinary
-headings, captions, table headers and editorial labels should be Chinese.
-When reproduction is restricted or deliberately avoided, set the object's
-`publication: {mode: discussion_only, reason: <specific reason>}`. The full
-evidence discussion remains required; original images/table reproductions are
-not required. This field is not a license grant. Disclose non-reproduction and
-link the original paper. Any original conceptual diagram or factual synthesis
-table must be labelled as the reviewer's synthesis and cannot mimic the original.
-Absent this explicit mode, the existing image/table and caption checks apply.
+Wrap the relevant prose/figure in a plain, non-nested semantic section:
 
-Use semantic `<figure><img .../><figcaption>...</figcaption></figure>`, meaningful
-Chinese alt text and a workspace-relative source asset. Use `<ResponsiveTable>`
-around overflow-prone tables and put a Chinese caption paragraph immediately
-before it. Start headings at h2: the site supplies h1. Use KaTeX, language-labelled
-code fences, and existing styling; no CSS, font rules or theme hex values here.
-Import only components used. Optional Mermaid:
-`<MermaidDiagram code={'flowchart LR\n A[输入] --> B[结果]'} alt="流程说明">`
-with a caption slot; this is an explanatory schematic, never substitute evidence.
-AcademicCallout uses kind note/definition/method/caution and optional label.
+```mdx
+<section data-evidence="Figure 1; Table 1" data-claims="C01 C02">
 
-Use `draft: true`. Keep a references section identifying the reviewed paper using
-verified bibliographic metadata and DOI if reported. Do not add placeholder or
-unread citations. Before blog publication, move/copy assets to the destination's
-article asset location, rebase paths, check image rights, run that repository's
-Astro/lint/format/build checks, and inspect desktop/mobile rendering. This Skill
-generates a draft package; it does not authorize a blog-repository write or publish.
+### 为什么这组比较能够检验方法
+
+连续的中文分析，明确提到原文图1与原文表1，解释读法、观察和推断边界。
+图像/表格及图注放在推进论证的位置，不用编号作标题。
+
+</section>
+```
+
+Use exact manifest object IDs separated by semicolons, and claim IDs separated
+by spaces. Multiple sections can bind the same object; together they must link
+all its supported claims. Every used object needs nonempty Chinese analysis and
+an explicit reader-visible reference. Unknown objects/claims fail. Bindings in
+comments or code are not evidence. This is provenance metadata, not a second
+scientific source or a style visible to readers. Do not nest section wrappers.
+
+For reproduced figures use semantic figure/img/figcaption with Chinese alt and
+caption; for source tables use ResponsiveTable with the caption above. Static
+workspace-relative assets must exist. Admitted site paths are checked separately
+in the target build. For rights-limited or deliberately omitted reproductions,
+set publication.mode=discussion_only and a specific reason; full discussion remains
+mandatory. See figure-table-rules.md for the rights gate. Independently compiled
+facts or conceptual diagrams must be identified as reviewer synthesis.
+
+## Language and semantic elements
+
+Write academic Chinese: coherent paragraphs, restrained conclusions, Chinese
+headings/captions/table headers. Retain necessary paper titles, journals, proper
+method names, abbreviations, variables, equations and code. Introduce specialist
+terms as 中文（English） when useful, then remain consistent. Typical complex
+methods reviews need about 4,000–7,000 Chinese characters; evidence depth and a
+continuous argument decide length, never filler or a numerical quota.
+
+- Ordered lists: genuine steps, causal chains or decision criteria.
+- Unordered lists: parallel conditions, limits or design elements.
+- Blockquotes: short attributed source propositions, or an explicitly identified
+  central judgment under discussion; never decorative emphasis or invented quotes.
+- AcademicCallout: note/definition/method/caution with an explicit Chinese label.
+- ResponsiveTable: factual comparison or synthesis, not a prose layout device.
+- Mermaid: only the reviewer's independent conceptual process/logic, clearly labelled.
+- Code fences: only when an interface, data structure or pseudocode is itself
+  explanatory evidence. Do not force a code example to vary the page visually.
+
+Use only needed existing components, KaTeX and styles. Add no CSS/font/theme layer.
+Keep draft:true until authorized admission. Include verified paper metadata/DOI
+and per-object source/license attribution. Run review/blog validation, independent
+scientific review, target checks and actual desktop/mobile inspection. This Skill
+itself does not grant permission to write to a blog or publish it.

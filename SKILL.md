@@ -1,6 +1,6 @@
 ---
 name: paper-review
-description: Read one scientific paper PDF in full using existing local MinerU, build an evidence-linked scientific review, and write a Chinese figure/table-centred blog compatible with water-modeling-notes. Use for single-paper deep reading, not surveys or referee reports.
+description: Read one scientific paper PDF in full using existing local MinerU, build an evidence-linked scientific review, and write a narrative-first, evidence-centered Chinese blog compatible with water-modeling-notes. Use for single-paper deep reading, not surveys or referee reports.
 ---
 
 # Paper review
@@ -36,8 +36,10 @@ The agent reads and writes the scientific interpretation; scripts do not summari
    interfaces actually used. Record repository commit in `review.blog_contract_commit`.
    If inaccessible or incompatible, stop the blog stage; do not guess.
 7. Read [blog-writing](references/blog-writing.md), then copy and complete
-   `templates/blog.mdx`. Write Chinese, question-led, evidence-centred prose with
-   explicit claims and boundaries. Preserve English paper titles, names and symbols.
+   `templates/blog.mdx`. Write continuous academic Chinese under H2–H4 scientific headings, with
+   explicit claims and boundaries. Bind evidence without visible checklist labels.
+   Apply per-object reproduction rights checks; preserve original images unchanged
+   when licensed, otherwise retain text-only analysis. Preserve necessary English names.
 8. Run `validate_review.py <review-dir> --stage blog`. Re-read the scientific
    review and blog against the source; deterministic PASS does not certify truth,
    innovation, extraction accuracy, Chinese prose quality or reproduction rights.

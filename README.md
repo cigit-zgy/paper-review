@@ -1,7 +1,7 @@
 # paper-review
 
 Read one scientific PDF in full, construct a source-linked scientific review,
-and write a Chinese blog organized around Figure/Table evidence. The Skill guides
+and write a narrative-first Chinese blog grounded in Figure/Table evidence. The Skill guides
 an agent's reading and reasoning. Its scripts manage files and check structure;
 they do not generate scientific conclusions.
 
@@ -97,7 +97,7 @@ uv run python scripts/validate_review.py "/reviews/paper one" --stage review
 
 Only after this gate passes and the current blog rules are read, copy
 `templates/blog.mdx` into the workspace's `output/blog.mdx` and write the article.
-Replace the sample metadata/date, adapt Figure/Table blocks to the actual paper,
+Replace the sample metadata/date, adapt the narrative and hidden evidence bindings to the actual paper,
 remove unused component imports and keep `draft: true`.
 
 ```sh
@@ -147,17 +147,21 @@ actual source text. Excerpts are whitespace-normalized and checked against the
 extraction; this does not prove their scientific relevance. Innovation blocks
 resolve claim IDs or explicitly say `not established`.
 
-## Figure/table-centred writing
+## Narrative-first, evidence-centered writing
 
-Every main object needs analysis even when omitted from the final blog for a
-documented reason. Core supplementary evidence receives the same treatment.
+Every main object needs analysis in both the review and final blog. Core
+supplementary evidence receives the same treatment. Omitted non-core supplements
+need a documented reason.
 For each used object, write a Chinese caption, question, reading guidance,
 observation, supported claim and evidence boundary. Explain panel relationships;
-do not merely translate captions. See [figure/table rules](references/figure-table-rules.md)
+do not merely translate captions. Scientific questions determine headings, not
+figure numbers. Use hidden section evidence/claim bindings; visible five-label
+checklists and fixed section titles are no longer required. Every original image
+must pass the per-object rights gate. See [figure/table rules](references/figure-table-rules.md)
 and [blog writing](references/blog-writing.md).
 
-Default scale is roughly 2500–4500 Chinese characters for a normal research article,
-longer when justified. This is guidance, not a word-count test. English paper titles,
+Complex method reviews usually need about 4,000–7,000 Chinese characters;
+continuous argument and complete evidence determine depth. This is guidance, not a word-count test. English paper titles,
 journal names, proper names, symbols, code and DOI stay in their original form.
 
 ## Integration with water-modeling-notes
@@ -168,14 +172,14 @@ The initial contract was checked at main commit
 AGENTS.md, academic-blog SKILL.md and academic-content.md, content schema and used
 component interfaces. A checkout can lag remote main; record the inspected SHA.
 
-The template uses supported frontmatter, h2 sections, `ResponsiveTable` and
+The template uses supported frontmatter, H2–H4 narrative sections, `ResponsiveTable` and
 `AcademicCallout`. Optional diagrams use `MermaidDiagram` with `code`, `alt` and
 caption slot; no CSS/components are copied. Keep the site's centralized typography,
 Dracula theme, regular body weight and Chinese font handling. Tables have Chinese
 captions above them; figures have alt text and explanatory captions.
 
 Publication is a separate authorized step: choose a stable descriptive MDX filename
-in `src/content/posts/`, copy assets and rebase links, run the target project's
+in the target's current Paper Review collection, copy cleared assets and rebase links, run the target project's
 `pnpm astro check`, `pnpm lint`, `pnpm format:check`, `pnpm build`, and inspect
 desktop/mobile rendering. Drafts must stay out of routes, lists, RSS, sitemap and
 Pagefind. The Skill creation task does not modify the blog's actual content.

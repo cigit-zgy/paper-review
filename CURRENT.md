@@ -1,14 +1,12 @@
 # Current capability
 
-Single-paper local MinerU extraction adapter, structured scientific evidence review,
-and Chinese figure/table-centred MDX draft workflow. Current semantics are maintained
-in reports/design/README.md and projected by SKILL.md and references/.
+Single-paper local MinerU extraction, source-bound review and narrative-first,
+evidence-centered Chinese MDX. Scientific questions define H2–H4; object/claim
+bindings preserve traceability without visible checklists or figure-number chapters.
+Every main object requires analysis and a visible reference. Original images need
+per-object rights inspection, unchanged content and source/license attribution.
 
-The offline suite passes. Real-paper qualification is a separate step and must not
-be inferred from synthetic fixtures or deterministic validation alone.
-
-Source adjudication now binds raw extraction and original PDF hashes without
-rewriting inputs. Chinese discussion-only sections and distinct Extended Data /
-reporting identifiers support source-based review without reproducing images.
-The offline regression suite contains 42 passing tests; scientific acceptance
-requires an independent source-level review for each real paper.
+The offline regression suite has 52 passing tests. Independent behavior and code
+review cover free narrative and adversarial bindings. Scientific acceptance of each
+real paper remains separate from mechanical validation and publication rights.
+Current semantics are owned by reports/design/README.md and projected by SKILL.md.

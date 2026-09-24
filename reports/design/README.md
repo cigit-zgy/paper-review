@@ -33,20 +33,26 @@ Supplementary objects cited in core arguments receive the same full analysis.
 `validate_review.py --stage review` is required BEFORE copying the blog template
 or authoring blog prose. It checks full review coverage, object/panel completeness,
 claim links and local paths. `--stage blog` additionally checks MDX frontmatter,
-required Chinese sections, object references, captions, asset paths and structured
+narrative H2–H4 hierarchy, explicit Chinese callout labels, hidden object/claim
+bindings, captions, asset paths and structured
 evidence discussion. Neither gate certifies scientific truth or publication rights.
 Missing evidence fails closed; interpretation uncertainty is explicit. Templates
 are unfinished drafts and intentionally cannot pass a finished-artifact gate.
 
 ## Blog integration
 
-Consult current target-main rules on every use. Initial interface baseline:
-water-modeling-notes main e0251db18838324e329943502d20b40555b8e9e2.
-Use h2 sections, valid four-topic frontmatter, draft=true, semantic figures with
+Consult current target-main rules on every use.
+Use narrative H2–H4 sections, valid four-topic frontmatter, draft=true, semantic figures with
 Chinese captions and alt text, captions above ResponsiveTable, and optional
 MermaidDiagram(code, alt) / AcademicCallout(kind, label). Reuse target styling;
 do not copy its components/CSS. The blog proceeds by questions and evidence,
-not the paper's IMRaD structure. Suggested 2500–4500 Chinese characters is guidance.
+not the paper's IMRaD structure. Complex method reviews typically need 4,000–7,000 Chinese characters; this is
+guidance, not a quota. Numbered object headings and visible five-label blocks are
+replaced by scientific narrative headings and plain section data bindings. The
+scientific reviewer checks the full six-part evidence explanation in prose.
+Original images may be reproduced unchanged when each object passes its source,
+noncommercial-use, attribution and third-party-credit rights gate; unclear rights
+fall back to full discussion without reproduction. No global visual changes.
 
 ## Publication
 

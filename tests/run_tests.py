@@ -104,6 +104,7 @@ class ContractTests(unittest.TestCase):
                              for obj in m["figures"] + m["tables"]])
         p = self.work / "output/blog.mdx"
         s = p.read_text().replace("Figure 1", "原文图1").replace("Table 1", "原文表1")
+        s = s.replace('data-evidence="原文图1"', 'data-evidence="Figure 1"').replace('data-evidence="原文表1"', 'data-evidence="Table 1"')
         import re
         s = re.sub(r"<figure>.*?</figure>", "", s, flags=re.S)
         s = re.sub(r"<ResponsiveTable.*?</ResponsiveTable>", "", s, flags=re.S)
@@ -120,6 +121,84 @@ class ContractTests(unittest.TestCase):
             p = self.work / rel
             p.write_text(p.read_text().replace("Figure 1", "Extended Data Figure 1"))
         self.assertEqual(validate(self.work, "blog"), [])
+
+    def narrative_blog(self):
+        p = self.work / "output/blog.mdx"
+        if 'data-evidence="Figure 1"' in p.read_text():
+            return p
+        s = p.read_text().replace("## Figure 1：比较如何组织", '<section data-evidence="Figure 1" data-claims="C01">\n\n### 输入与输出的比较结构')
+        s = s.replace("## Table 1：两个条件的对应关系", '</section>\n\n<section data-evidence="Table 1" data-claims="C01">\n\n### 对照条件能够说明什么')
+        s = s.replace("## 作者真正证明了什么？", '</section>\n\n## 从观察到结论的距离')
+        for label in ("问题：", "读图方法：", "读表方法：", "核心观察：", "支持判断：", "证据边界："):
+            s = s.replace(label, "")
+        p.write_text(s)
+        return p
+
+    def test_narrative_free_headings_and_prose_keep_evidence_links(self):
+        self.narrative_blog()
+        self.assertEqual(validate(self.work, "blog"), [])
+
+    def test_narrative_rejects_missing_or_unknown_evidence_binding(self):
+        p = self.narrative_blog()
+        p.write_text(p.read_text().replace('data-evidence="Figure 1"', 'data-evidence="Figure 99"'))
+        self.rejects("Figure 1")
+
+    def test_narrative_rejects_missing_claim_binding(self):
+        p = self.narrative_blog()
+        p.write_text(p.read_text().replace('data-claims="C01"', 'data-claims=""'))
+        self.rejects("claim binding")
+
+    def test_narrative_heading_depth_and_jump_rejected(self):
+        p = self.narrative_blog()
+        original = p.read_text()
+        for heading in ("# 额外标题", "##### 过深标题", "<h5>过深标题</h5>", "#### 跳级标题"):
+            with self.subTest(heading=heading):
+                p.write_text(original.replace("## 这篇论文解决什么问题？", heading))
+                self.rejects("heading")
+
+    def test_narrative_rejects_object_number_headings(self):
+        p = self.narrative_blog()
+        p.write_text(p.read_text().replace("### 输入与输出的比较结构", "### 原文图1：输入与输出"))
+        self.rejects("object-number")
+
+    def test_narrative_callout_requires_static_chinese_label(self):
+        p = self.narrative_blog()
+        original = p.read_text()
+        for label in ('', ' label="Note"', ' label={name}'):
+            with self.subTest(label=label):
+                p.write_text(original.replace(' label="证据边界"', label))
+                self.rejects("Chinese callout label")
+
+    def test_narrative_code_and_comments_do_not_supply_evidence(self):
+        p = self.narrative_blog()
+        s = p.read_text()
+        a=s.index('<section data-evidence="Figure 1"');b=s.index('</section>',a)+len('</section>')
+        block=s[a:b]
+        for hidden in ('{/*'+block+'*/}', '```mdx\n'+block+'\n```', '`'+block+'`', '<pre><code>'+block+'</code></pre>'):
+            with self.subTest(hidden=hidden[:8]):
+                p.write_text(s[:a]+hidden+s[b:])
+                self.rejects("Figure 1")
+
+    def test_narrative_requires_visible_object_reference(self):
+        p = self.narrative_blog()
+        self.edit(lambda m: m["figures"][0].update(publication={"mode": "discussion_only", "reason": "Text-only evidence."}))
+        p.write_text(p.read_text().replace("Figure 1", "该图").replace('data-evidence="该图"', 'data-evidence="Figure 1"'))
+        self.rejects("visible reference")
+
+    def test_main_object_cannot_be_omitted_from_blog(self):
+        import re
+        p = self.narrative_blog()
+        self.edit(lambda m: m["figures"][0].update(blog_role="not used: omitted from narrative"))
+        p.write_text(re.sub(r'<section data-evidence="Figure 1".*?</section>', '', p.read_text(), flags=re.S))
+        self.rejects("main object")
+
+    def test_short_setext_h1_rejected(self):
+        p = self.narrative_blog()
+        original = p.read_text()
+        for underline in ("=", "  ==", "==="):
+            with self.subTest(underline=underline):
+                p.write_text(original + "\n额外标题\n" + underline + "\n")
+                self.rejects("h1")
 
     def test_valid_minimal_review_and_blog(self):
         self.assertEqual(validate(self.work, "review"), [])
@@ -150,10 +229,10 @@ class ContractTests(unittest.TestCase):
         path.write_text(path.read_text() + "\nFigure 9：不存在。\n")
         self.rejects("Figure 9")
 
-    def test_missing_chinese_section(self):
+    def test_free_chinese_section_title(self):
         path = self.work / "output/blog.mdx"
         path.write_text(path.read_text().replace("## 创新点在哪里？", "## 其他"))
-        self.rejects("创新点在哪里")
+        self.assertEqual(validate(self.work, "blog"), [])
 
     def test_malformed_manifest(self):
         self.manifest.write_text("paper: [broken")
@@ -204,11 +283,11 @@ class ContractTests(unittest.TestCase):
         path.write_text(path.read_text() + '\n<img src="../../../outside.svg" alt="路径越界" />\n')
         self.rejects("outside")
 
-    def test_caption_and_evidence_boundary_required(self):
+    def test_caption_and_evidence_binding_required(self):
         path = self.work / "output/blog.mdx"
         original = path.read_text()
-        path.write_text(original.replace("证据边界：", "补充："))
-        self.rejects("证据边界")
+        path.write_text(original.replace('data-evidence="Figure 1"', 'data-evidence=""'))
+        self.rejects("evidence binding")
         path.write_text(original.replace("<figcaption>", "<p>").replace("</figcaption>", "</p>"))
         self.rejects("caption")
 
