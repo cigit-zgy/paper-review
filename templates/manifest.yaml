@@ -1,0 +1,24 @@
+# Unfinished scaffold. Inventory comes from PDF inspection BEFORE analysis.
+paper:
+  title: TODO
+  authors: []
+  year: null
+  journal: TODO
+  doi: null
+source:
+  pdf: source/paper.pdf
+  extracted_markdown: extracted/paper.md
+review:
+  status: initialized
+  generated_at: TODO
+  full_text_read: false
+  inventory_checked: false
+  coverage: []
+  blog_contract_commit: null
+  uncertainties: []
+# Inventory entry: {id: Figure 1, scope: main, source_location: 'PDF p. 2', panels: [a, b]}
+inventory: []
+# See schema and figure-table-rules.md for full analytical records.
+figures: []
+tables: []
+claims: []

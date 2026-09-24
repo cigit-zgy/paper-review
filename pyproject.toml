@@ -1,0 +1,9 @@
+[project]
+name = "paper-review"
+version = "0.1.0"
+description = "Single-paper evidence review and Chinese figure-centred writing"
+requires-python = ">=3.12"
+dependencies = ["PyYAML>=6.0,<7", "jsonschema>=4.23,<5"]
+
+[tool.uv]
+package = false

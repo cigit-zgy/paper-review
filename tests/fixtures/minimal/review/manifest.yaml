@@ -1,0 +1,87 @@
+paper:
+  title: Synthetic fixture — not a scientific publication
+  authors:
+  - Fixture author (synthetic)
+  year: null
+  journal: Not a publication
+  doi: null
+source:
+  pdf: source/paper.pdf
+  extracted_markdown: extracted/paper.md
+review:
+  status: reviewed
+  generated_at: '2026-09-24T00:00:00Z'
+  full_text_read: true
+  inventory_checked: true
+  coverage:
+  - Methods, PDF p. 1
+  - Results, PDF p. 2
+  - Limitations, PDF p. 3
+  blog_contract_commit: e0251db18838324e329943502d20b40555b8e9e2
+  uncertainties: []
+inventory:
+- id: Figure 1
+  scope: main
+  source_location: PDF page 2, Results
+  panels:
+  - a
+  - b
+- id: Table 1
+  scope: main
+  source_location: PDF page 2, Results
+  panels: []
+figures:
+- id: Figure 1
+  scope: main
+  core_argument: true
+  source_location: PDF page 2, Results
+  role: Synthetic comparison only
+  question: What comparison is depicted?
+  what_is_shown: A and B labels, not measurements
+  variables_axes_groups: Conditions A and B; no units or measured axes
+  comparison: A versus B in a toy illustration
+  main_observation: Two labels are presented; no effect is measured.
+  authors_interpretation: The fixture claims no improvement.
+  supported_claim:
+  - C01
+  evidence_strength: Illustration only; no scientific inference
+  limitations: Synthetic fixture; no empirical evidence
+  blog_role: used
+  panels:
+  - id: a
+    role: Input label
+    relationship: Precedes the output in b
+  - id: b
+    role: Output label
+    relationship: Follows the input in a
+tables:
+- id: Table 1
+  scope: main
+  core_argument: true
+  source_location: PDF page 2, Results
+  role: Synthetic comparison only
+  question: What comparison is depicted?
+  what_is_shown: A and B labels, not measurements
+  variables_axes_groups: Conditions A and B; no units or measured axes
+  comparison: A versus B in a toy illustration
+  main_observation: Two labels are presented; no effect is measured.
+  authors_interpretation: The fixture claims no improvement.
+  supported_claim:
+  - C01
+  evidence_strength: Illustration only; no scientific inference
+  limitations: Synthetic fixture; no empirical evidence
+  blog_role: used
+  panels: []
+claims:
+- id: C01
+  author_claim: The toy evidence illustrates a comparison only.
+  source_section: Results
+  source_page: 2
+  figure:
+  - Figure 1a
+  - Figure 1b
+  - Table 1
+  evidence_text: The toy figure and table illustrate a comparison, not a measured
+    improvement.
+  interpretation: A and B are explanatory labels.
+  critical_assessment: This cannot establish an empirical effect.

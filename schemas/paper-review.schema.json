@@ -1,0 +1,491 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cigit-zgy/paper-review/blob/main/schemas/paper-review.schema.json",
+  "type": "object",
+  "properties": {
+    "paper": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        },
+        "year": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1000,
+          "maximum": 9999
+        },
+        "journal": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "doi": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "title",
+        "authors",
+        "year",
+        "journal",
+        "doi"
+      ],
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "pdf": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "extracted_markdown": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "pdf",
+        "extracted_markdown"
+      ],
+      "additionalProperties": false
+    },
+    "review": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "initialized",
+            "reviewed"
+          ]
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "full_text_read": {
+          "type": "boolean"
+        },
+        "inventory_checked": {
+          "type": "boolean"
+        },
+        "coverage": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        },
+        "blog_contract_commit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "uncertainties": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source_location": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "issue": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "blocks_blog": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "source_location",
+              "issue",
+              "blocks_blog"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "status",
+        "generated_at",
+        "full_text_read",
+        "inventory_checked",
+        "coverage",
+        "blog_contract_commit",
+        "uncertainties"
+      ],
+      "additionalProperties": false
+    },
+    "inventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^(Figure|Table) S?[1-9][0-9]*$"
+          },
+          "scope": {
+            "enum": [
+              "main",
+              "supplementary"
+            ]
+          },
+          "source_location": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "panels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z]$"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "scope",
+          "source_location",
+          "panels"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "figures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^(Figure|Table) S?[1-9][0-9]*$"
+          },
+          "scope": {
+            "enum": [
+              "main",
+              "supplementary"
+            ]
+          },
+          "core_argument": {
+            "type": "boolean"
+          },
+          "source_location": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "what_is_shown": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "variables_axes_groups": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "comparison": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "main_observation": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "authors_interpretation": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "evidence_strength": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "limitations": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "supported_claim": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^C[0-9]+$"
+            }
+          },
+          "blog_role": {
+            "type": "string",
+            "pattern": "^(used|not used: .+)$"
+          },
+          "panels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z]$"
+                },
+                "role": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "relationship": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "role",
+                "relationship"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "scope",
+          "core_argument",
+          "source_location",
+          "role",
+          "main_observation",
+          "blog_role"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^(Figure|Table) S?[1-9][0-9]*$"
+          },
+          "scope": {
+            "enum": [
+              "main",
+              "supplementary"
+            ]
+          },
+          "core_argument": {
+            "type": "boolean"
+          },
+          "source_location": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "what_is_shown": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "variables_axes_groups": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "comparison": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "main_observation": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "authors_interpretation": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "evidence_strength": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "limitations": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "supported_claim": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^C[0-9]+$"
+            }
+          },
+          "blog_role": {
+            "type": "string",
+            "pattern": "^(used|not used: .+)$"
+          },
+          "panels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z]$"
+                },
+                "role": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "relationship": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "role",
+                "relationship"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "scope",
+          "core_argument",
+          "source_location",
+          "role",
+          "main_observation",
+          "blog_role"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^C[0-9]+$"
+          },
+          "author_claim": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "source_section": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "source_page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "figure": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(Figure|Table) S?[1-9][0-9]*[a-z]?$"
+            }
+          },
+          "evidence_text": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "interpretation": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "critical_assessment": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "id",
+          "author_claim",
+          "source_section",
+          "source_page",
+          "figure",
+          "evidence_text",
+          "interpretation",
+          "critical_assessment"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "paper",
+    "source",
+    "review",
+    "inventory",
+    "figures",
+    "tables",
+    "claims"
+  ],
+  "additionalProperties": false
+}
