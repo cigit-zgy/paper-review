@@ -76,6 +76,23 @@ continuous argument decide length, never filler or a numerical quota.
 - Code fences: only when an interface, data structure or pseudocode is itself
   explanatory evidence. Do not force a code example to vary the page visually.
 
+## Final prose cleanup
+
+After the scientific draft is complete, run one whitelist-only AI-tone cleanup
+using `larashero3-dotcom/lieflat-less-ai-tone` pinned at
+`27d29232f10124db904ca9c0536d0b67cb3b2833` as a secondary style reference.
+Apply only rules with an explicit textual trigger. Typical targets include
+翻案腔, empty list-introduction colons, repeated adjacent sentence frames,
+paragraph-opening comments without a referent, and abstract improvement wording
+when the same paragraph already contains exact values.
+
+This pass MUST preserve heading hierarchy, section/paragraph order, lists, tables,
+quotes, code blocks, evidence bindings, factual content, numerical values,
+uncertainty and claim strength. Do not add colloquial fillers, alter sentence
+length merely for rhythm, or rewrite text that does not hit a listed rule.
+Academic Chinese, source fidelity and this Skill's evidence contract take
+precedence over the secondary style reference.
+
 Use only needed existing components, KaTeX and styles. Add no CSS/font/theme layer.
 Keep draft:true until authorized admission. Include verified paper metadata/DOI
 and per-object source/license attribution. Run review/blog validation, independent
