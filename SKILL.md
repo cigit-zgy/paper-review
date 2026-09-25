@@ -40,6 +40,8 @@ The agent reads and writes the scientific interpretation; scripts do not summari
    explicit claims and boundaries. Bind evidence without visible checklist labels.
    Apply per-object reproduction rights checks; preserve original images unchanged
    when licensed, otherwise retain text-only analysis. Preserve necessary English names.
+   After the scientific draft is complete, apply the pinned whitelist-only prose
+   cleanup defined in blog-writing; do not use it to restructure or change evidence.
 8. Run `validate_review.py <review-dir> --stage blog`. Re-read the scientific
    review and blog against the source; deterministic PASS does not certify truth,
    innovation, extraction accuracy, Chinese prose quality or reproduction rights.
