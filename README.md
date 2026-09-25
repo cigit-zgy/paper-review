@@ -186,8 +186,8 @@ Pagefind. The Skill creation task does not modify the blog's actual content.
 
 ## Design references
 
-All six are **REFERENCE_ONLY** for design, not copied code or installed project
-dependencies. The separately installed MinerU parser is called as the requested
+All listed projects are **REFERENCE_ONLY** for design, not copied code or installed
+project dependencies. The separately installed MinerU parser is called as the requested
 local tool. This project is not a fork of any of them.
 
 | Project | Principle referenced | Not adopted |
@@ -198,6 +198,7 @@ local tool. This project is not a fork of any of them.
 | [AkariAsai/OpenScholar](https://github.com/AkariAsai/OpenScholar) | Claims grounded in identifiable scientific passages | Retrieval/reranking corpus, training and multi-paper synthesis |
 | [stanford-oval/storm](https://github.com/stanford-oval/storm) | Structured evidence-informed long-form composition | Topic research, web retrieval and persona generation |
 | [sodalone/paper-reading-skill](https://github.com/sodalone/paper-reading-skill) | Single-paper decomposition and claim/evidence assessment | arXiv-specific acquisition, external literature pipeline and referee framing |
+| [larashero3-dotcom/lieflat-less-ai-tone](https://github.com/larashero3-dotcom/lieflat-less-ai-tone/tree/27d29232f10124db904ca9c0536d0b67cb3b2833) | Whitelist-only final Chinese prose cleanup with explicit triggers | General rewriting, structural editing, added facts or colloquialization |
 
 ## Limitations
 
